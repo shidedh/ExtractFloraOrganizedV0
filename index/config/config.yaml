@@ -1,0 +1,11 @@
+pipeline:
+  stage: None
+  input_pdf: hi
+  input_pdfs: hi, bye
+  input_pdfs_lst: [a, b, c]
+
+draw:
+  
+replace_annotated:
+  
+replace_df:
