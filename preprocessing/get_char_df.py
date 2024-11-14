@@ -7,26 +7,28 @@ import os
 # ------------------------ IMPORT VOLUMES ------------------------ #
 vol1_path = '../input/NOUVELLE FLORE DU LIBAN ET DE LA SYRIE 1.pdf'
 vol2_path = '../input/NOUVELLE FLORE DU LIBAN ET DE LA SYRIE 2.pdf'
+vol2_last8_path = '../input/vol2_last_8_pages.pdf'
 vol3_path = '../input/NOUVELLE FLORE DU LIBAN ET DE LA SYRIE 3.pdf'
 
 vol1_doc = fitz.open(vol1_path)
 vol2_doc = fitz.open(vol2_path)
+vol2_last8_doc = fitz.open(vol2_last8_path)
 vol3_doc = fitz.open(vol3_path)
 
-#concatinate the last 8 pages of vol2 to vol2 -- 
-#TODO: May need to resize the last 8 pages to fit the rest of the document while keeping meta data
-vol2_last8_path = "../input/vol2_last_8_pages.pdf"
-vol2_last8_doc = fitz.open(vol2_last8_path)
-vol2_doc.insert_pdf(vol2_last8_doc, from_page=0, to_page=vol2_last8_doc.page_count - 1, start_at=vol2_doc.page_count)
+# append vol2_last8 to vol2
+vol2_doc.insert_pdf(vol2_last8_doc, from_page=0, to_page=vol2_last8_doc.page_count - 1, start_at=vol2_doc.page_count) 
 vol2_doc.save('../input/NOUVELLE FLORE DU LIBAN ET DE LA SYRIE 2 COMPLETE.pdf')
 
 
 vol1_pages = [vol1_doc[i] for i in range(vol1_doc.page_count)]
 vol2_pages = [vol2_doc[i] for i in range(vol2_doc.page_count)]
+vol2_last8_pages = [vol2_last8_doc[i] for i in range(vol2_last8_doc.page_count)]
 vol3_pages = [vol3_doc[i] for i in range(vol3_doc.page_count)]
 # ---------------------------------------------------------------- #
 
-
+# save pkl file as csv for vol2
+# vol2_df = pd.read_pickle("../input/char_df/vol2_df.pkl")
+# vol2_df.to_csv("../input/char_df/vol2_df.csv", index = False)
 # ---------------------- Set Global Values ----------------------- #
 TARGET_DPI = 300
 mat = fitz.Matrix(TARGET_DPI/ 72, TARGET_DPI/ 72)
@@ -269,7 +271,6 @@ print("\nextracting volume 3")
 vol3_df = book_char_df("3", vol3_pages)
 process_words_in_place(vol3_df)
 vol3_df = rearrange_cols(vol3_df)
-
 
 if not os.path.exists("../input/char_df"):
     os.makedirs("../input/char_df")
