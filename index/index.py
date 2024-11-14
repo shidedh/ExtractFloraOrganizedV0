@@ -32,7 +32,7 @@ vol2_char_df = pd.read_pickle("../input/char_df/vol2_df.pkl")
 vol3_char_df = pd.read_pickle("../input/char_df/vol3_df.pkl")
 
 vol1_index = list(range(616, 639)) #inclusive
-vol2_index = list(range(703, 725 + 8))
+vol2_index = list(range(703, 733)) #includes 8 extra pages
 vol3_index = list(range(555, 583))
 
 # %% [markdown]
