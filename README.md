@@ -8,4 +8,4 @@ Important dependencies:
 - PyMuPDF 1.21.1: Python bindings for the MuPDF 1.21.1 library.
 Version date: 2022-12-13 00:00:01.
 Built for Python 3.10 on darwin (64-bit).
-- please make an output/local/index_output folder in root repo before running index script (will build the right repos in the script in future versions)
+- please make the output/local/index_output , output/Oct2024 folder ,and output/local/main_text/ folders in root repo before running index script (will build the right repos in the script in future versions)
