@@ -195,19 +195,16 @@ def difflib_closest_match_score(input_str, match_str):
 # ---------------------- adding the n_words ---------------------- #
 i = 1
 for vol_word_df, vol_species in [(vol1_word_df, vol_index_lists[0][1]), (vol2_word_df, vol_index_lists[1][1]), (vol3_word_df, vol_index_lists[2][1])]:
-    if i == 1:
-        i += 1
-    else:
-        print("VOLUME", str(i))
-        for n in range(1, 5):
-            word_group_col_name = f"{n}_words"
-            match_col_name = f"{n}_words_match"
-            match_score_col_name = f"{n}_words_match_score"
-            print(f"finding best match for {word_group_col_name}")
-            get_n_words_flagged(vol_word_df, n)
-            vol_word_df[match_col_name] = vol_word_df[word_group_col_name].progress_apply(lambda x: difflib_closest_matches(x, vol_species))
-            vol_word_df[match_score_col_name] = vol_word_df.progress_apply(lambda r: difflib_closest_match_score(r[word_group_col_name], r[match_col_name]), axis = 1)
-        i += 1 
+    print("VOLUME", str(i))
+    for n in range(1, 5):
+        word_group_col_name = f"{n}_words"
+        match_col_name = f"{n}_words_match"
+        match_score_col_name = f"{n}_words_match_score"
+        print(f"finding best match for {word_group_col_name}")
+        get_n_words_flagged(vol_word_df, n)
+        vol_word_df[match_col_name] = vol_word_df[word_group_col_name].progress_apply(lambda x: difflib_closest_matches(x, vol_species))
+        vol_word_df[match_score_col_name] = vol_word_df.progress_apply(lambda r: difflib_closest_match_score(r[word_group_col_name], r[match_col_name]), axis = 1)
+    i += 1 
 # ---------------------------------------------------------------- #
 
 # ------------------------ finding entries ----------------------- #
@@ -227,65 +224,62 @@ def get_section_start_y(row):
 likely_results = []
 i = 1 
 for vol_word_df, vol_genera in [(vol1_word_df, vol_index_lists[0][0]), (vol2_word_df, vol_index_lists[1][0]), (vol3_word_df, vol_index_lists[2][0])]:
-    if i == 1:
-        i += 1 
-    else:
-        print("finding entry boxes for vol", str(i))
-        vol_word_df['line_id'] = vol_word_df.progress_apply(lambda r : (r['page_num'], r['block_num'], r['line_num']), axis = 1) 
-        is_binomial = ((~(vol_word_df['1_flags'].apply(is_italic)) & (vol_word_df['1_words_match_score'] > 0.85)) | 
-                    (~(vol_word_df['2_flags'].apply(is_italic)) & (vol_word_df['2_words_match_score'] > 0.85)) | 
-                    (~(vol_word_df['3_flags'].apply(is_italic)) & (vol_word_df['3_words_match_score'] > 0.85)) | 
-                    (~(vol_word_df['1_flags'].apply(is_italic)) & (vol_word_df['1_words_match_score'] > 0.85))) 
-        vol_likely_results = vol_word_df[is_binomial]
-        likely_results.append(vol_likely_results)
+    print("finding entry boxes for vol", str(i))
+    vol_word_df['line_id'] = vol_word_df.progress_apply(lambda r : (r['page_num'], r['block_num'], r['line_num']), axis = 1) 
+    is_binomial = ((~(vol_word_df['1_flags'].apply(is_italic)) & (vol_word_df['1_words_match_score'] > 0.85)) | 
+                (~(vol_word_df['2_flags'].apply(is_italic)) & (vol_word_df['2_words_match_score'] > 0.85)) | 
+                (~(vol_word_df['3_flags'].apply(is_italic)) & (vol_word_df['3_words_match_score'] > 0.85)) | 
+                (~(vol_word_df['1_flags'].apply(is_italic)) & (vol_word_df['1_words_match_score'] > 0.85))) 
+    vol_likely_results = vol_word_df[is_binomial]
+    likely_results.append(vol_likely_results)
 
-        is_stop = (((vol_word_df['word'].isin(vol_genera))) | 
-                ((vol_word_df['line_bbox'].apply(lambda x : x[0] > 120)) & 
-                    (vol_word_df['word'].str.isupper()) & 
-                    (vol_word_df['pruned_word'].apply(len) > 2)))
-        possible_stops = vol_word_df[is_stop]
+    is_stop = (((vol_word_df['word'].isin(vol_genera))) | 
+            ((vol_word_df['line_bbox'].apply(lambda x : x[0] > 120)) & 
+                (vol_word_df['word'].str.isupper()) & 
+                (vol_word_df['pruned_word'].apply(len) > 2)))
+    possible_stops = vol_word_df[is_stop]
 
-        break_page_num =  vol_word_df[(is_binomial) | (is_stop)]['page_num']
-        break_block_num = vol_word_df[(is_binomial) | (is_stop)]['block_num']
-        break_line_num =  vol_word_df[(is_binomial) | (is_stop)]['line_num']
-        break_id = list(zip(break_page_num, break_block_num, break_line_num))
-        vol_word_df['section_break'] = vol_word_df['line_id'].isin(break_id)
+    break_page_num =  vol_word_df[(is_binomial) | (is_stop)]['page_num']
+    break_block_num = vol_word_df[(is_binomial) | (is_stop)]['block_num']
+    break_line_num =  vol_word_df[(is_binomial) | (is_stop)]['line_num']
+    break_id = list(zip(break_page_num, break_block_num, break_line_num))
+    vol_word_df['section_break'] = vol_word_df['line_id'].isin(break_id)
 
-        vol_word_df['section_id'] = vol_word_df.progress_apply(get_section_id, axis = 1)
-        vol_word_df['section_id'].ffill(inplace=True)
+    vol_word_df['section_id'] = vol_word_df.progress_apply(get_section_id, axis = 1)
+    vol_word_df['section_id'].ffill(inplace=True)
 
-        vol_word_df['section_start_y'] = vol_word_df.progress_apply(get_section_start_y, axis = 1)
-        vol_word_df['section_start_y'].ffill(inplace=True)
+    vol_word_df['section_start_y'] = vol_word_df.progress_apply(get_section_start_y, axis = 1)
+    vol_word_df['section_start_y'].ffill(inplace=True)
 
-        #getting section bbox 
-        # break down line coords
-        vol_word_df['line_x0'] = vol_word_df["line_bbox"].apply(lambda x: x[0])
-        vol_word_df['line_y0'] = vol_word_df["line_bbox"].apply(lambda x: x[1])
-        vol_word_df['line_x1'] = vol1_word_df["line_bbox"].apply(lambda x: x[2])
-        vol_word_df['line_y1'] = vol_word_df["line_bbox"].apply(lambda x: x[3])
+    #getting section bbox 
+    # break down line coords
+    vol_word_df['line_x0'] = vol_word_df["line_bbox"].apply(lambda x: x[0])
+    vol_word_df['line_y0'] = vol_word_df["line_bbox"].apply(lambda x: x[1])
+    vol_word_df['line_x1'] = vol1_word_df["line_bbox"].apply(lambda x: x[2])
+    vol_word_df['line_y1'] = vol_word_df["line_bbox"].apply(lambda x: x[3])
 
-        #sections_coords: 
-        vol_word_df["section_x0"] = vol_word_df.groupby('section_id')['line_x0'].transform('min')
-        vol_word_df["section_y0_all"] = vol_word_df.groupby('section_id')['line_y0'].transform('min')
-        vol_word_df["section_y0"] = vol_word_df[['section_y0_all','section_start_y']].max(axis=1)
-        vol_word_df["section_x1"] = vol_word_df.groupby('section_id')['line_x1'].transform('max')
-        vol_word_df["section_y1"] = vol_word_df.groupby('section_id')['line_y1'].transform('max')
+    #sections_coords: 
+    vol_word_df["section_x0"] = vol_word_df.groupby('section_id')['line_x0'].transform('min')
+    vol_word_df["section_y0_all"] = vol_word_df.groupby('section_id')['line_y0'].transform('min')
+    vol_word_df["section_y0"] = vol_word_df[['section_y0_all','section_start_y']].max(axis=1)
+    vol_word_df["section_x1"] = vol_word_df.groupby('section_id')['line_x1'].transform('max')
+    vol_word_df["section_y1"] = vol_word_df.groupby('section_id')['line_y1'].transform('max')
 
-        #section_bbox:
-        vol_word_df["section_bbox"] = vol_word_df.apply(lambda r: (r["section_x0"], r["section_y0"], r["section_x1"], r["section_y1"]), axis = 1)
+    #section_bbox:
+    vol_word_df["section_bbox"] = vol_word_df.apply(lambda r: (r["section_x0"], r["section_y0"], r["section_x1"], r["section_y1"]), axis = 1)
 
-        #drop extra cols:
-        vol_word_df.drop(columns= ["line_x0", "line_y0", "line_x1", "line_y1", "section_x0", "section_y0", "section_x1", "section_y1"], inplace = True)
+    #drop extra cols:
+    vol_word_df.drop(columns= ["line_x0", "line_y0", "line_x1", "line_y1", "section_x0", "section_y0", "section_x1", "section_y1"], inplace = True)
 
-        binom_page_num = vol_word_df[(is_binomial)]['page_num']
-        binom_block_num = vol_word_df[(is_binomial)]['block_num']
-        binom_line_num = vol_word_df[(is_binomial)]['line_num']
-        binom_id = list(zip(binom_page_num, binom_block_num, binom_line_num))
-        vol_word_df['binom_section'] = vol_word_df['line_id'].isin(binom_id)
-        
-        if not os.path.exists("../input/desc_box_df"):
-            os.makedirs("../input/desc_box_df")
+    binom_page_num = vol_word_df[(is_binomial)]['page_num']
+    binom_block_num = vol_word_df[(is_binomial)]['block_num']
+    binom_line_num = vol_word_df[(is_binomial)]['line_num']
+    binom_id = list(zip(binom_page_num, binom_block_num, binom_line_num))
+    vol_word_df['binom_section'] = vol_word_df['line_id'].isin(binom_id)
+    
+    if not os.path.exists("../input/desc_box_df"):
+        os.makedirs("../input/desc_box_df")
 
-        vol_word_df.to_pickle(f"../input/desc_box_df/vol{i}_entry_df.pkl")
-        i += 1
+    vol_word_df.to_pickle(f"../input/desc_box_df/vol{i}_entry_df.pkl")
+    i += 1
 # ---------------------------------------------------------------- #
