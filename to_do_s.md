@@ -1,0 +1,8 @@
+- latancy stuff 
+    - remove prints functions
+    - let's say index script takes and hour but I remember a particular part takes longest -- can use that too 
+- go through all imports, get version, add to ReadMe
+- output of last 8 pages of volume 2 (parsed locaiton) -- sort by species binomal name string and grab everything > R. 
+- look for scripts that generate nonitalizs_vol2 and index_output_vol2 (better index output .. right now it's at like 50% X_X)
+- find where pdf parses things inside the entry boxes around colors -- for parsed locaitons
+- binder or online repo things that helps it run [LAST_PRIORITY]
