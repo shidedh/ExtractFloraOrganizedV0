@@ -193,6 +193,7 @@ def difflib_closest_match_score(input_str, match_str):
 # ---------------------------------------------------------------- #
 
 # ---------------------- adding the n_words ---------------------- #
+# Measure time from here - latancy
 i = 1
 for vol_word_df, vol_species in [(vol1_word_df, vol_index_lists[0][1]), (vol2_word_df, vol_index_lists[1][1]), (vol3_word_df, vol_index_lists[2][1])]:
     print("VOLUME", str(i))
@@ -205,6 +206,7 @@ for vol_word_df, vol_species in [(vol1_word_df, vol_index_lists[0][1]), (vol2_wo
         vol_word_df[match_col_name] = vol_word_df[word_group_col_name].progress_apply(lambda x: difflib_closest_matches(x, vol_species))
         vol_word_df[match_score_col_name] = vol_word_df.progress_apply(lambda r: difflib_closest_match_score(r[word_group_col_name], r[match_col_name]), axis = 1)
     i += 1 
+# measure time to here - latancy
 # ---------------------------------------------------------------- #
 
 # ------------------------ finding entries ----------------------- #
