@@ -1,6 +1,7 @@
 # folders
 input
 output
+logs
 
 # misc 
 .DS_Store
