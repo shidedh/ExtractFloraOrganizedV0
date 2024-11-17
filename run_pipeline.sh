@@ -7,7 +7,7 @@ log_file="../logs/pipeline_${timestamp}.log"
 packages="./logs/packages.log"
 
 
-echo "Logging installed Python packages and their versions..." | tee -a "$packages"
+echo "Logging installed Python packages and their versions..." | tee "$packages"
 pip freeze | tee -a "$packages"
 grep -rE "^\s*(import|from)\s+" "$search_dir" | awk '{print $2}' | sort | uniq | tee -a "$packages"
 
